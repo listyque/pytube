@@ -559,10 +559,31 @@ def metadata(initial_data) -> Optional[YouTubeMetadata]:
 
     :rtype: YouTubeMetadata
     """
+    #from pprint import pformat
+    
+    
+    #with open('{0}.txt'.format('initial_rows'), 'w') as f:
+    #    f.write(str(pformat(initial_rows)))
+
     try:
-        metadata_rows: List = initial_data["contents"]["twoColumnWatchNextResults"][
-            "results"]["results"]["contents"][1]["videoSecondaryInfoRenderer"][
-            "metadataRowContainer"]["metadataRowContainerRenderer"]["rows"]
+    
+    
+        initial_rows = initial_data["engagementPanels"][1]["engagementPanelSectionListRenderer"]["content"]
+        if initial_rows.get('macroMarkersListRenderer'):
+            initial_rows = initial_data["engagementPanels"][2]["engagementPanelSectionListRenderer"]["content"]["structuredDescriptionContentRenderer"]["items"][3]
+        else:
+            initial_rows = initial_data["engagementPanels"][1]["engagementPanelSectionListRenderer"]["content"]["structuredDescriptionContentRenderer"]["items"][2]
+
+    
+        initial_rows: List = initial_rows["videoDescriptionMusicSectionRenderer"]["carouselLockups"]
+
+        metadata_rows = []
+        
+        for row in range(0, len(initial_rows)):
+            result_row = initial_rows[row]["carouselLockupRenderer"]["infoRows"]
+        
+            metadata_rows.extend(result_row)
+            
     except (KeyError, IndexError):
         # If there's an exception accessing this data, it probably doesn't exist.
         return YouTubeMetadata([])
@@ -570,12 +591,15 @@ def metadata(initial_data) -> Optional[YouTubeMetadata]:
     # Rows appear to only have "metadataRowRenderer" or "metadataRowHeaderRenderer"
     #  and we only care about the former, so we filter the others
     metadata_rows = filter(
-        lambda x: "metadataRowRenderer" in x.keys(),
+        lambda x: "infoRowRenderer" in x.keys(),
         metadata_rows
     )
 
     # We then access the metadataRowRenderer key in each element
     #  and build a metadata object from this new list
-    metadata_rows = [x["metadataRowRenderer"] for x in metadata_rows]
-
+    metadata_rows = [x["infoRowRenderer"] for x in metadata_rows]
+    
+    #with open('{0}.txt'.format('metadata_rows'), 'w') as f:
+    #    f.write(str(metadata_rows))
+    
     return YouTubeMetadata(metadata_rows)
