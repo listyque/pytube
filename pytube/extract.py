@@ -559,7 +559,7 @@ def metadata(initial_data) -> Optional[YouTubeMetadata]:
 
     :rtype: YouTubeMetadata
     """
-    from pprint import pformat, pprint
+    #from pprint import pformat, pprint
     
     
     #with open('{0}.txt'.format('initial_rows'), 'w') as f:
@@ -577,8 +577,8 @@ def metadata(initial_data) -> Optional[YouTubeMetadata]:
     
         initial_rows: List = initial_rows["videoDescriptionMusicSectionRenderer"]["carouselLockups"]
         
-        with open('{0}.txt'.format('/opt/tactic/initial_rows'), 'w') as f:
-            f.write(str(pformat(initial_rows)))
+        #with open('{0}.txt'.format('/opt/tactic/initial_rows'), 'w') as f:
+        #    f.write(str(pformat(initial_rows)))
 
         metadata_rows = []
         
