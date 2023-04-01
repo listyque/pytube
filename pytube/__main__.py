@@ -99,8 +99,13 @@ class YouTube:
     def watch_html(self):
         if self._watch_html:
             return self._watch_html
-        self._watch_html = request.get(url=self.watch_url)
-        return self._watch_html
+        
+        import requests
+        #headers = {'user-agent': 'my-app/0.0.1'}
+        headers = {'user-agent': 'Mozilla/5.0', 'accept-language': 'en-US,en'}
+        self._watch_html = requests.get(self.watch_url, headers=headers)
+        #self._watch_html = request.get(url=self.watch_url)
+        return self._watch_html.text
 
     @property
     def embed_html(self):
@@ -437,6 +442,7 @@ class YouTube:
 
         :rtype: YouTubeMetadata
         """
+
         if self._metadata:
             return self._metadata
         else:

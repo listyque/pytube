@@ -15,14 +15,28 @@ class YouTubeMetadata:
             else:
                 continue
 
-            contents = el['contents'][0]
-            if 'simpleText' in contents:
-                self._metadata[-1][metadata_title] = contents['simpleText']
-            elif 'runs' in contents:
-                self._metadata[-1][metadata_title] = contents['runs'][0]['text']
+            if 'expandedMetadata' in el:
+                content = el['expandedMetadata']
+                if 'runs' in content:
+                    objects = []
+                    for o in content['runs']:
+                        if 'text' in o:
+                            if o['text'] != ', ':
+                                objects.append(o['text'])
+                    self._metadata[-1][metadata_title] = objects
+                elif 'simpleText' in content:
+                    self._metadata[-1][metadata_title] = el['expandedMetadata']['simpleText']
+
+            elif 'defaultMetadata' in el:
+                content = el['defaultMetadata']
+                if 'runs' in content:
+                    self._metadata[-1][metadata_title] = content['runs'][0]['text']
+                elif 'simpleText' in content:
+                    self._metadata[-1][metadata_title] = content['simpleText']
+
 
             # Upon reaching a dividing line, create a new grouping
-            if el.get('hasDividerLine', False):
+            if el.get('expandIcon', False):
                 self._metadata.append({})
 
         # If we happen to create an empty dict at the end, drop it

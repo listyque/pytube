@@ -559,7 +559,7 @@ def metadata(initial_data) -> Optional[YouTubeMetadata]:
 
     :rtype: YouTubeMetadata
     """
-    #from pprint import pformat
+    from pprint import pformat, pprint
     
     
     #with open('{0}.txt'.format('initial_rows'), 'w') as f:
@@ -576,14 +576,41 @@ def metadata(initial_data) -> Optional[YouTubeMetadata]:
 
     
         initial_rows: List = initial_rows["videoDescriptionMusicSectionRenderer"]["carouselLockups"]
+        
+        with open('{0}.txt'.format('/opt/tactic/initial_rows'), 'w') as f:
+            f.write(str(pformat(initial_rows)))
 
         metadata_rows = []
         
         for row in range(0, len(initial_rows)):
-            result_row = initial_rows[row]["carouselLockupRenderer"]["infoRows"]
-        
-            metadata_rows.extend(result_row)
+            #result_row = initial_rows[row]["carouselLockupRenderer"]["infoRows"]
+            result_row = []
             
+            # special case for song name if there is more than one song
+            if initial_rows[row]["carouselLockupRenderer"].get('videoLockup'):
+                
+                initial_song_title = initial_rows[row]["carouselLockupRenderer"]["videoLockup"]["compactVideoRenderer"]
+                
+                song_title = ''
+                #print(row, initial_song_title.get("title"))
+                
+                # first song in a row
+                if initial_song_title.get("title"):
+                    if initial_song_title["title"].get("runs"):
+                        song_title = initial_song_title["title"]["runs"][0]["text"]
+                    else:
+                        song_title = initial_song_title["title"]["simpleText"]
+                else:
+                    # all other songs
+                    song_title = initial_song_title["shortBylineText"]["title"]["simpleText"]
+                
+                song_title_row = {'infoRowRenderer': {'defaultMetadata': {'simpleText': song_title}, 'title': {'simpleText': 'SONG'}}}
+                result_row.append(song_title_row)
+            
+            result_row.extend(initial_rows[row]["carouselLockupRenderer"]["infoRows"])
+            
+            metadata_rows.extend(result_row)
+         
     except (KeyError, IndexError):
         # If there's an exception accessing this data, it probably doesn't exist.
         return YouTubeMetadata([])

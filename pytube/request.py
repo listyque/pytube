@@ -6,7 +6,7 @@ import re
 import socket
 from functools import lru_cache
 from urllib import parse
-from urllib.error import URLError
+from urllib.error import URLError, HTTPError
 from urllib.request import Request, urlopen
 
 from pytube.exceptions import RegexMatchError, MaxRetriesExceeded
@@ -23,6 +23,7 @@ def _execute_request(
     data=None,
     timeout=socket._GLOBAL_DEFAULT_TIMEOUT
 ):
+    timeout = 3
     base_headers = {"User-Agent": "Mozilla/5.0", "accept-language": "en-US,en"}
     if headers:
         base_headers.update(headers)
@@ -34,7 +35,18 @@ def _execute_request(
         request = Request(url, headers=base_headers, method=method, data=data)
     else:
         raise ValueError("Invalid URL")
-    return urlopen(request, timeout=timeout)  # nosec
+        
+    try:
+        response = urlopen(request, timeout=timeout)
+        #return response
+    except (HTTPError, URLError) as error:
+        print(f'Data of not retrieved because {error}\nURL: {url}')
+    except socket.timeout:
+        print(f'socket timed out - URL {url}')
+    else:
+        return response
+    
+    #return urlopen(request, timeout=timeout)  # nosec
 
 
 def get(url, extra_headers=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT):
